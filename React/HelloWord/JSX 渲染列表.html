@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="./script/react.development.js"></script>
+    <script src="./script/react-dom.development.js"></script>
+    <script src="./script/babel.min.js"></script>
+</head>
+
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        // JSX能够自动将数组中的元素遍历渲染，但是是一行
+        const arr = ['孙悟空', '沙和尚', '猪八戒']
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        //直接在外部遍历数组
+        const data = arr.map((item) => {
+            return <li>{item}</li>
+        })
+        const list = <ul>{data}</ul>
+        root.render(list)
+    </script>
+</body>
+
+</html>

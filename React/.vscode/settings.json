@@ -1,0 +1,6 @@
+{
+	"editor.bracketPairColorization.enabled": true,
+	"workbench.colorTheme": "Monokai",
+	"workbench.preferredDarkColorTheme": "Monokai Dimmed",
+	"git.ignoreLimitWarning": true
+}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="./script/react.development.js"></script>
+    <script src="./script/react-dom.development.js"></script>
+    <script src="./script/babel.min.js"></script>
+</head>
+
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const div = <button> 我是按钮 1</button>
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(div)
+        let name = '张'
+        //JSX不是字符串，不要加引号
+        //         JSX中html标签应该小写，React组件应该大写
+        //         JSX有且只有一个根标签
+        //         JSX标签必须正确结束
+        //          JSX可以使用{ }嵌入表达式     有值的语句就是表达式
+        const nametest = <button>我叫{name}</button>
+        root.render(nametest)
+        //          如果表达式是空值 布尔值 undefined这些值 将不会显示
+
+        //         在JSX中，属性可以直接在标签中设置
+        // 注意： class需要使用className代替
+        // style必须使用对象设置   style = {{ background: 'red' }}
+        const div2 = <div className="div2" style={{ backgroundColor: 'red' }}> 我是div2</div>
+        root.render(div2)
+
+    </script>
+</body>
+
+</html>
