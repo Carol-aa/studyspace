@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible"
+        content="IE=edge">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+    <title>手写一个promisedemo1</title>
+</head>
+
+<body>
+    <div id="root"></div>
+    <script>
+        class myPromise {
+            constructor(exectuor) {
+                this.value = null;
+                this.reason = null;
+                this.state = "pending";
+                //预先声明变量的方式来存放回调
+                // this.onFulfilled = null
+                // this.onRejected = null
+                //数组的方式存放回调
+                this.callbacks = []
+                const resolve = value => {
+                    // console.log("resolve")
+                    if (this.state !== "pending") return
+                    this.state = "fulfilled"
+                    this.value = value
+                    // this.onFulfilled(value)//接收实例上的value
+                    this.callbacks.forEach(callback => callback.fulfilled())
+
+                }
+                const reject = reason => {
+                    consoel.log("reject")
+                    if (this.state !== "pending") return;
+                    this.state = "rejected"
+                    this.reason = reason
+                    // this.onRejected(reason)
+                    this.callbacks.forEach(callback => callback.rejected())
+
+                }
+                try {
+                    exectuor(resolve, reject)
+                } catch (err) {
+                    reject(err)
+
+                }
+            }
+            //onFulfilled 和 onRejected 都是可选参数
+            // 如果 onFulfilled 不是一个函数，就忽略它
+            // 如果 onRejected 不是一个函数，就忽略它
+            then(onFulfilled, onRejected) {
+                // console.log(onFulfilled, "onFulfilled")
+                // console.log("then", typeof onRejected)
+                // if (typeof onFulfilled !== "function") { onFulfilled = () => { } }拿到前面传过来的参数
+                if (typeof onFulfilled !== "function") { onFulfilled = (value) => value }
+                if (typeof onRejected !== "function") { onRejected = (reason) => { throw reason } }
+                // promise 是支持链式调用的,所以then 返回的应该还是一个 promise 对象
+                let promise = new myPromise((resolve, reject) => {
+                    // console.log(this.state, "this.state")
+                    if (this.state === "fulfilled") {
+                        // Promise 中 promise.then() 括号内部的代码是异步执行的。
+                        setTimeout(() => {
+                            try {
+                                this.resolvePromise(promise, onFulfilled(this.value), resolve, reject)
+                                // resolve(onFulfilled(this.value))
+                            }
+                            catch (err) {
+                                reject(err)
+                            }
+                        })
+                    }
+                    if (this.state === "rejected") {
+                        setTimeout(() => {
+                            try {
+                                // resolve(onRejected(this.reason))
+                                this.resolvePromise(promise, onRejected(this.reason), resolve, reject)
+                            } catch (err) {
+                                reject(err)
+                            }
+                        })
+                    }
+                    if (this.state === "pending") {
+                        // this.onFulfilled = onFulfilled;
+                        // this.onRejected = onRejected
+                        this.callbacks.push({
+                            fulfilled: () => {
+                                setTimeout(() => {
+                                    try {
+                                        // resolve(onFulfilled(this.value))
+                                        this.resolvePromise(promise, onFulfilled(this.value), resolve, reject)
+                                    } catch (err) {
+                                        reject(err)
+                                    }
+                                })
+                            },
+                            rejected: () => {
+                                setTimeout(() => {
+                                    try {
+                                        // resolve(onRejected(this.reason))
+                                        this.resolvePromise(promise, onRejected(this.reason), resolve, reject)
+                                    } catch (err) {
+                                        reject(err)
+                                    }
+                                })
+                            }
+                        })
+                        // 注意是 resolve 而不是 reject，因为 promise 状态是不应该互相影响的
+
+                    }
+                })
+                return promise;
+
+            }
+            resolvePromise(promise, result, resolve, reject) {
+                //...校验规则：1.禁止自身循环调用   2.传递上一次返回的状态  3.禁止promise嵌套promise
+                // 1.解决是否循环引用
+                if (promise === result) {
+                    reject(new TypeError("cycle!!!!!!"))
+                }
+                if (result && typeof result === "object" || typeof result === "function") {
+                    let called;//   用来标记调用的的是resolve还是reject
+                    try {
+                        let then = result.then
+                        if (typeof then === "function") {
+                            then.call(result, value => {//this为result     第二个参数是给then传递的参数
+                                if (called) return
+                                called = true
+                                this.resolvePromise(promise, value, resolve, reject)
+                            },
+                                reason => {
+                                    if (called) return
+                                    called = true
+                                    reject(reason)
+                                })
+                        } else {
+                            if (called) return
+                            called = true
+                            resolve(result)
+                        }
+                    } catch (err) {
+                        if (called) return;
+                        called = true;
+                        reject(err)
+                    }
+                } else {
+                    resolve(result)
+                }
+            }
+        }
+        Promise.defer = Promise.deferred = function () {
+            let dfd = {};
+            dfd.promise = new Promise((resolve, reject) => {
+                dfd.resolve = resolve;
+                dfd.reject = reject;
+            });
+            return dfd;
+        }
+        new myPromise((resolve, reject) => {
+            resolve();
+        }).then(() => { console.log(1) })
+        console.log(2)
+    </script>
+</body>
+
+</html>
